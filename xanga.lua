@@ -27,6 +27,7 @@ read_file = function(file)
 end
 
 wget.callbacks.get_urls = function(file, url, is_css, iri)
+  print("Looking into "..url)
   -- progress message
   url_count = url_count + 1
   if url_count % 20 == 0 then
@@ -135,10 +136,17 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
   if string.match(url, "http://www%.xanga%.com/videos/Services/XangaVideoPlayer%.asmx/GetVideo")
      or string.match(url, "%.xanga%.com/photos/Services/FilmStrip%.asmx") then
     local xml = read_file(file)
-    for url in string.gmatch(xml, "http://[^<\"]+") do
-      if string.match(url, "%.xanga%.com") then
-        table.insert(urls, { url=url })
-      end
+    for url in string.gmatch(xml, "<FlvUrl>(http://[^<\"]+)") do
+      table.insert(urls, { url=url })
+    end
+    for url in string.gmatch(xml, "<ImageUrl>(http://[^<\"]+)") do
+      table.insert(urls, { url=url })
+    end
+    for url in string.gmatch(xml, "<Image[0-9]+>(http://[^<\"]+)") do
+      table.insert(urls, { url=url })
+    end
+    for url in string.gmatch(xml, "<NavigatingUrl>(http://[^<\"]+)") do
+      table.insert(urls, { url=url, link_expect_html=1 })
     end
   end
 
@@ -169,13 +177,34 @@ wget.callbacks.download_child_p = function(urlpos, parent, depth, start_url_pars
     -- always download from this host
     return verdict
   else
-    if not verdict and reason == "DIFFERENT_HOST" and urlpos["link_inline_p"] == 1 then
-      -- get inline links from other hosts
-      return true
-    else
-      -- do not further recurse on other hosts
-      return false
+    if not verdict and reason == "DIFFERENT_HOST" then
+      if urlpos["link_inline_p"] == 1 then
+        -- get inline links from other hosts
+        return true
+      elseif urlpos["link_expect_html"] == 0 and urlpos["link_expect_css"] == 0 then
+        -- inline links but not marked as such
+        return true
+      end
+
+      local username = string.match(start_url_parsed["host"], "^([^.]+)%.xanga%.com")
+      local url = urlpos["url"]["url"]
+      -- a few other urls we want to get
+      if string.match(url, "^http://photo%.xanga%.com/"..username.."/")
+         or string.match(url, "^http://www%.xanga%.com/"..username.."$")
+         or string.match(url, "^http://www%.xanga%.com/"..username.."/")
+         or string.match(url, "^http://weblog%.xanga%.com/"..username.."/")
+         or string.match(url, "^http://x[a-z0-9][a-z0-9]%.xanga%.com/.+%.jpg$") then
+        return true
+      end
     end
+
+    -- do not further recurse on other hosts
+    if reason then
+      print(reason.." "..urlpos["url"]["url"])
+    else
+      print("________ "..urlpos["url"]["url"])
+    end
+    return verdict
   end
 end
 
