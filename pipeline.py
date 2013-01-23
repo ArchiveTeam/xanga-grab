@@ -4,6 +4,9 @@ import shutil
 import time
 from distutils.version import StrictVersion
 
+import functools
+from tornado.httpclient import AsyncHTTPClient, HTTPRequest
+
 import seesaw
 from seesaw.project import *
 from seesaw.config import *
@@ -33,7 +36,7 @@ if not WGET_LUA:
 
 
 USER_AGENT = "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/533.20.25 (KHTML, like Gecko) Version/5.0.4 Safari/533.20.27"
-VERSION = "20130123.01"
+VERSION = "20130123.02"
 
 
 class PrepareDirectories(SimpleTask):
@@ -65,6 +68,49 @@ class MoveFiles(SimpleTask):
     shutil.rmtree("%(item_dir)s" % item)
 
 
+class Login(SimpleTask):
+  def __init__(self):
+    SimpleTask.__init__(self, "Login")
+
+  def enqueue(self, item):
+    self.start_item(item)
+    self.login(item)
+
+  def login(self, item):
+    http_client = AsyncHTTPClient()
+    item.log_output("Logging in on www.xanga.com... ", full_line = False)
+
+    http_client.fetch("http://www.xanga.com/default.aspx",
+        functools.partial(self.handle_response, item),
+        method="POST",
+        body="IsPostBack=true&XangaHeader%24txtSigninUsername=archiveteam&XangaHeader%24txtSigninPassword=archiveteam",
+        follow_redirects=False,
+        user_agent=USER_AGENT)
+
+  def handle_response(self, item, response):
+    if response.code == 302:
+      keys = set()
+      lines = []
+      for cookie_header in response.headers.get_list("Set-Cookie"):
+        key, value = cookie_header.split(";")[0].split("=", 1)
+        keys.add(key)
+        lines.append("\t".join((".xanga.com", "TRUE", "/", "FALSE", "0", key, value)))
+
+      if "u" in keys and "x" in keys and "y" in keys:
+        item.log_output("OK.\n", full_line=False)
+        item["cookie_jar"] = "%(item_dir)s/cookies.txt" % item
+        with open(item["cookie_jar"], "w") as f:
+          f.write("\n".join(lines))
+          f.write("\n\n\n\n")
+        self.complete_item(item)
+        return
+
+    item.log_output("failed (response code %d)\n" % response.code, full_line=False)
+    self.fail_item(item)
+
+
+
+
 
 project = Project(
   title = "Xanga",
@@ -82,10 +128,12 @@ RSYNC_TARGET = ConfigInterpolation("fos.textfiles.com::alardland/warrior/xanga/%
 pipeline = Pipeline(
   GetItemFromTracker("http://tracker.archiveteam.org/%s" % TRACKER_ID, downloader, VERSION),
   PrepareDirectories(warc_prefix="xanga.com"),
+  Login(),
   WgetDownload([ WGET_LUA,
       "-U", USER_AGENT,
       "-nv",
       "-o", ItemInterpolation("%(item_dir)s/wget.log"),
+      "--load-cookies", ItemInterpolation("%(cookie_jar)s"),
       "--lua-script", "xanga.lua",
       "--no-check-certificate",
       "--output-document", ItemInterpolation("%(item_dir)s/wget.tmp"),
