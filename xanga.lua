@@ -27,7 +27,6 @@ read_file = function(file)
 end
 
 wget.callbacks.get_urls = function(file, url, is_css, iri)
-  print("Looking into "..url)
   -- progress message
   url_count = url_count + 1
   if url_count % 20 == 0 then
@@ -166,15 +165,20 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
     table.insert(urls, { url=(img_base..img_id) })
   end
 
-  print(table.show(urls))
-
   return urls
 end
 
 wget.callbacks.download_child_p = function(urlpos, parent, depth, start_url_parsed, iri, verdict, reason)
+  -- print(table.show({urlpos=urlpos, parent=parent, start_url_parsed=start_url_parsed, verdict=verdict, reason=reason}))
+
   -- get inline links from other hosts
   if start_url_parsed["host"] == urlpos["url"]["host"] then
-    -- always download from this host
+    -- follow normal decision
+    local url = urlpos["url"]["url"]
+    if string.match(url, "%.xanga%.com/Amazon/") then
+      -- don't fall into the Amazon redirect trap
+      return false
+    end
     return verdict
   else
     if not verdict and reason == "DIFFERENT_HOST" then
@@ -199,12 +203,7 @@ wget.callbacks.download_child_p = function(urlpos, parent, depth, start_url_pars
     end
 
     -- do not further recurse on other hosts
-    if reason then
-      print(reason.." "..urlpos["url"]["url"])
-    else
-      print("________ "..urlpos["url"]["url"])
-    end
-    return verdict
+    return false
   end
 end
 
