@@ -150,7 +150,7 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
   end
 
   -- image scaling
-  local img_base, img_id = string.match(url, "^(http://x.+%.xanga%.com/[a-z0-9]+/)[qtszmbo]([a-z0-9]+%.jpg)$")
+  local img_base, img_id = string.match(url, "^(http://x.+%.xanga%.com/[a-z0-9]+/)[qtszmbo]([a-z0-9]+%.[jpgpnggif]+)$")
   if img_base and img_id then
     table.insert(urls, { url=(img_base.."q"..img_id) })
     table.insert(urls, { url=(img_base.."t"..img_id) })
@@ -160,7 +160,7 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
     table.insert(urls, { url=(img_base.."b"..img_id) })
     table.insert(urls, { url=(img_base.."o"..img_id) })
   end
-  local img_base, img_id = string.match(url, "^(http://p.+%.xanga%.com/[a-z0-9]+/[a-z0-9]+/)t/([a-z0-9]+%.jpg)$")
+  local img_base, img_id = string.match(url, "^(http://p.+%.xanga%.com/[a-z0-9]+/[a-z0-9]+/)t/([a-z0-9]+%.[jpgpnggif]+)$")
   if img_base and img_id then
     table.insert(urls, { url=(img_base..img_id) })
   end
@@ -197,7 +197,7 @@ wget.callbacks.download_child_p = function(urlpos, parent, depth, start_url_pars
          or string.match(url, "^http://www%.xanga%.com/"..username.."$")
          or string.match(url, "^http://www%.xanga%.com/"..username.."/")
          or string.match(url, "^http://weblog%.xanga%.com/"..username.."/")
-         or string.match(url, "^http://x[a-z0-9][a-z0-9]%.xanga%.com/.+%.jpg$") then
+         or string.match(url, "^http://x[a-z0-9][a-z0-9]%.xanga%.com/.+%.[jpgpnggif]+$") then
         return true
       end
     end
