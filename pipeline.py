@@ -8,6 +8,9 @@ import functools
 from tornado.httpclient import AsyncHTTPClient, HTTPRequest
 
 import seesaw
+if StrictVersion(seesaw.__version__) < StrictVersion("0.0.12"):
+  raise Exception("This pipeline needs seesaw version 0.0.12 or higher.")
+
 from seesaw.project import *
 from seesaw.config import *
 from seesaw.item import *
@@ -17,9 +20,6 @@ from seesaw.externalprocess import *
 from seesaw.tracker import *
 from seesaw.util import find_executable
 
-
-if StrictVersion(seesaw.__version__) < StrictVersion("0.0.12"):
-  raise Exception("This pipeline needs seesaw version 0.0.12 or higher.")
 
 WGET_LUA = find_executable("Wget+Lua",
     "GNU Wget 1.14.lua.20130120-8476",
