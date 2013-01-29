@@ -36,7 +36,7 @@ if not WGET_LUA:
 
 
 USER_AGENT = "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/533.20.25 (KHTML, like Gecko) Version/5.0.4 Safari/533.20.27"
-VERSION = "20130127.01"
+VERSION = "20130129.01"
 
 
 class PrepareDirectories(SimpleTask):
@@ -148,7 +148,7 @@ pipeline = Pipeline(
       "--warc-file", ItemInterpolation("%(item_dir)s/%(warc_file_base)s"),
       "--warc-header", "operator: Archive Team",
       "--warc-header", "xanga-dld-script-version: " + VERSION,
-      "--warc-header", ItemInterpolation("xanga-usre: %(item_name)s"),
+      "--warc-header", ItemInterpolation("xanga-user: %(item_name)s"),
       ItemInterpolation("http://%(item_name)s.xanga.com/")
     ],
     max_tries = 2,
