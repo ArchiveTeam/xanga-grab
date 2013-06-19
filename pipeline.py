@@ -22,7 +22,7 @@ from seesaw.util import find_executable
 
 
 WGET_LUA = find_executable("Wget+Lua",
-    "GNU Wget 1.14.lua.20130120-8476",
+    "GNU Wget 1.14.lua.20130523-9a5c",
     [ "./wget-lua",
       "./wget-lua-warrior",
       "./wget-lua-local",
