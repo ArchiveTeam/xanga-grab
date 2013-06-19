@@ -8,8 +8,8 @@ import functools
 from tornado.httpclient import AsyncHTTPClient, HTTPRequest
 
 import seesaw
-if StrictVersion(seesaw.__version__) < StrictVersion("0.0.12"):
-  raise Exception("This pipeline needs seesaw version 0.0.12 or higher.")
+if StrictVersion(seesaw.__version__) < StrictVersion("0.0.15"):
+  raise Exception("This pipeline needs seesaw version 0.0.15 or higher.")
 
 from seesaw.project import *
 from seesaw.config import *
@@ -22,7 +22,7 @@ from seesaw.util import find_executable
 
 
 WGET_LUA = find_executable("Wget+Lua",
-    "GNU Wget 1.14.lua.20130120-8476",
+      "GNU Wget 1.14.lua.20130523-9a5c",
     [ "./wget-lua",
       "./wget-lua-warrior",
       "./wget-lua-local",
@@ -36,7 +36,7 @@ if not WGET_LUA:
 
 
 USER_AGENT = "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/533.20.25 (KHTML, like Gecko) Version/5.0.4 Safari/533.20.27"
-VERSION = "20130129.01"
+VERSION = "20130605.01"
 
 
 class PrepareDirectories(SimpleTask):
