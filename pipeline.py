@@ -35,7 +35,7 @@ if not WGET_LUA:
   raise Exception("No usable Wget+Lua found.")
 
 
-USER_AGENT = "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/533.20.25 (KHTML, like Gecko) Version/5.0.4 Safari/533.20.27"
+USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20130430 Firefox/23.0"
 VERSION = "20130605.01"
 
 
