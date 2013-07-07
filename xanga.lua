@@ -36,6 +36,11 @@ wget.callbacks.get_urls = function(file, url, is_css, iri)
 
   local urls = {}
   local html = nil
+ 
+  if string.match(url, "%.xanga%.com/.*%?xm=0") then
+  -- user is banned, abort WARC
+    return wget.actions.ABORT
+  end
 
   -- audio - download the necessary files, it will probably work in the WARC
   if string.match(url, "%.xanga%.com/audio/audioplayerinfo%.aspx") then
