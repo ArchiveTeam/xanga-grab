@@ -36,7 +36,7 @@ if not WGET_LUA:
 
 
 USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20130430 Firefox/23.0"
-VERSION = "20130629.03"
+VERSION = "20130707.01"
 
 
 class PrepareDirectories(SimpleTask):

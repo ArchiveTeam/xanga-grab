@@ -209,15 +209,11 @@ end
 
 wget.callbacks.httploop_result = function(url, err, http_stat)
   code = http_stat.statcode
-  if not (code == 200 or code == 404 or code == 302 or code == 301 or code == 0) then -- 414 is Request URI Too Long
-    -- Long delay because people like to run with way too much concurrency
-    delay = 1200
-
-    io.stdout:write("\nServer returned status "..code.."; you are probably blocked.\n")
-    io.stdout:write("You may want to move to another IP.  Waiting for "..delay.." seconds and exiting...\n")
+  if (code == 599) then -- 599 is returned when user is banned
+    io.stdout:write("\nServer returned status "..code.."; you are blocked.\n")
+    io.stdout:write("You may want to move to another IP.  Exiting...\n")
     io.stdout:flush()
 
-    os.execute("sleep "..delay)
     -- We have to give up on this WARC; we don't want to upload anything with
     -- error responses to the upload target
     return wget.actions.ABORT
