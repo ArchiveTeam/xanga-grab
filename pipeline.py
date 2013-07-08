@@ -5,19 +5,19 @@ import time
 from distutils.version import StrictVersion
 
 import functools
-from tornado.httpclient import AsyncHTTPClient, HTTPRequest
+from tornado.httpclient import AsyncHTTPClient
 
 import seesaw
 if StrictVersion(seesaw.__version__) < StrictVersion("0.0.15"):
   raise Exception("This pipeline needs seesaw version 0.0.15 or higher.")
 
-from seesaw.project import *
-from seesaw.config import *
-from seesaw.item import *
-from seesaw.task import *
-from seesaw.pipeline import *
-from seesaw.externalprocess import *
-from seesaw.tracker import *
+from seesaw.project import Project
+from seesaw.config import NumberConfigValue, ConfigInterpolation
+from seesaw.item import ItemInterpolation, ItemValue
+from seesaw.task import SimpleTask, LimitConcurrent
+from seesaw.pipeline import Pipeline
+from seesaw.externalprocess import WgetDownload
+from seesaw.tracker import GetItemFromTracker, UploadWithTracker, SendDoneToTracker, PrepareStatsForTracker
 from seesaw.util import find_executable
 
 
@@ -36,7 +36,7 @@ if not WGET_LUA:
 
 
 USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20130430 Firefox/23.0"
-VERSION = "20130707.02"
+VERSION = "20130708.01"
 
 
 class PrepareDirectories(SimpleTask):
