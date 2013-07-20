@@ -3,7 +3,7 @@
 -- Copyright 2010-2011 Jeffrey Friedl
 -- http://regex.info/blog/
 --
-local VERSION = 20111207.5  -- version history at end of file
+local VERSION = 20130720.01  -- version history at end of file
 local OBJDEF = { VERSION = VERSION }
 
 --

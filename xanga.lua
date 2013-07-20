@@ -2,6 +2,7 @@ dofile("urlcode.lua")
 dofile("table_show.lua")
 JSON = (loadfile "JSON.lua")()
 
+local iamblocked = 0
 local url_count = 0
 
 load_json_file = function(file)
@@ -212,8 +213,37 @@ wget.callbacks.download_child_p = function(urlpos, parent, depth, start_url_pars
   end
 end
 
+wget.callbacks.lookup_host = function(host)
+	if iamblocked == 1 then
+		-- if we believe we are route-blocked, rewrite any host which would
+		-- resolve to 64.145.94.19
+		--
+		-- of course, we can't resolve in lua, so we whitelist the statics instead
+		if string.match(host, "x[a-z0-9][a-z0-9]%.xanga%.com")
+			or string.match(host, "s.xanga.com")
+			or string.match(host, "pf.xanga.com")
+			or string.match(host, "photo.xanga.com")
+			or string.match(host, "weblog.xanga.com")
+			or string.match(host, "css.xanga.com")
+			then
+				return
+		end
+      		if string.match(host, "%.xanga.com") then
+			print("redirecting hostname:"..host.."\n")
+			return "duckandchicken.net"
+		end
+	end
+end
+
 wget.callbacks.httploop_result = function(url, err, http_stat)
   code = http_stat.statcode
+  -- if we're null routed, lets try another path - setting iamblocked to 2
+  -- will cause this URL to be re-gotten
+  if (code == 0) then
+	iamblocked = 1
+    	return wget.actions.NOTHING
+  end
+
   if (code == 599) then -- 599 is returned when user is banned
     io.stdout:write("\nServer returned status "..code.."; you are blocked.\n")
     io.stdout:write("You may want to move to another IP.  Exiting...\n")
