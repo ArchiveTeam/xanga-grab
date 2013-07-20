@@ -37,7 +37,7 @@ if not WGET_LUA:
 
 #USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20130430 Firefox/23.0"
 USER_AGENT = "ArchiveTeam/1.5"
-VERSION = "20130708.02"
+VERSION = "20130720.01"
 
 
 ## Begin AsyncPopen fix
@@ -120,18 +120,31 @@ class Login(SimpleTask):
     self.start_item(item)
     self.login(item)
 
-  def login(self, item):
+  def login(self, item, usefakexanga=False):
     http_client = AsyncHTTPClient()
-    item.log_output("Logging in on www.xanga.com... ", full_line = False)
 
-    http_client.fetch("http://www.xanga.com/default.aspx",
+    realhost="www.xanga.com"
+    if usefakexanga:
+        realhost="duckandchicken.net"
+
+    item.log_output("Logging in on %s (for %s)... " % (realhost, item['item_name']), full_line = False)
+
+    http_client.fetch("http://%s/default.aspx" % realhost,
         functools.partial(self.handle_response, item),
         method="POST",
         body="IsPostBack=true&XangaHeader%24txtSigninUsername=archiveteam&XangaHeader%24txtSigninPassword=archiveteam",
+        headers={"Host": "www.xanga.com"},
         follow_redirects=False,
         user_agent=USER_AGENT)
 
   def handle_response(self, item, response):
+    # retry login if we fail to hit real xanga
+    # This has to come _before_ we create the cookie jar
+    if "xanga.com" in response.effective_url and response.code==599:
+       item.log_output("%s failed (response code %d) - retry with fakexanga...\n" % (item['item_name'], response.code), full_line=False)
+       # nuke the broken cookie jar - need to recreate
+       return self.login(item, True)
+
     if response.code == 302:
       keys = set()
       lines = []
@@ -139,7 +152,7 @@ class Login(SimpleTask):
         key, value = cookie_header.split(";")[0].split("=", 1)
         keys.add(key)
         lines.append("\t".join((".xanga.com", "TRUE", "/", "FALSE", "0", key, value)))
-
+    
       if "u" in keys and "x" in keys and "y" in keys:
         item.log_output("OK.\n", full_line=False)
         item["cookie_jar"] = "%(item_dir)s/cookies.txt" % item
@@ -149,7 +162,9 @@ class Login(SimpleTask):
         self.complete_item(item)
         return
 
-    item.log_output("failed (response code %d)\n" % response.code, full_line=False)
+
+
+    item.log_output("%s failed (response code %d) finally...\n" % (item['item_name'], response.code), full_line=False)
     self.fail_item(item)
 
 
