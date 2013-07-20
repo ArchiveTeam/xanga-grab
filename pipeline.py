@@ -37,7 +37,7 @@ if not WGET_LUA:
 
 #USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20130430 Firefox/23.0"
 USER_AGENT = "ArchiveTeam/1.5"
-VERSION = "20130708.02"
+VERSION = "20130720.01"
 
 
 ## Begin AsyncPopen fix
